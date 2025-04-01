@@ -1,0 +1,16 @@
+# Add any directories, files, or patterns you don't want to be tracked by version control
+
+# IntelliJ project configuration
+.idea/
+*.iml
+
+# Ignore Terraform state files
+*.tfstate
+*.tfstate.*
+
+# Ignore Terraform module and provider caches
+.terraform/
+.terraform.lock.hcl
+
+# Ignore target folder of lambda source code
+src/lambda_code/target/
