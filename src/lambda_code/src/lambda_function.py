@@ -28,10 +28,9 @@ def __book_for_user(class_id, user, tomorrow_day, class_time):
     if class_booking_id is None:
         raise Exception("Error getting booking class id ")
 
-    # book_class(user_id, user_center_id, booking_id): 2432, 728, 28401
     result = http_client.book_class(token, user_id, user_center_id, class_booking_id)
     if result is not True:
-        raise Exception("Error on result value")
+        raise Exception("Error on booking class")
 
 
 def process(event, context):
@@ -47,20 +46,28 @@ def process(event, context):
     if class_id is None:
         raise Exception(f"Invalid class id for class name parameter {class_name}")
 
+    count_success = 0
     for user in users:
-        __book_for_user(class_id, user, tomorrow_day, class_time)
+        try:
+            __book_for_user(class_id, user, tomorrow_day, class_time)
+            count_success += 1
+        except Exception as e:
+            print(f"Error booking for user {user}: {e}")
+
+    return len(users) == count_success
 
 
 def lambda_handler(event, context):
     try:
-        process(event, context)
-        return {
-            'statusCode': 200,
-            'body': 'OK'
-        }
+        if process(event, context) is True:
+            return {
+                'statusCode': 200,
+                'body': 'OK'
+            }
     except Exception as e:
         print(f"Exception occurred: {e}")
-        return {
-            'statusCode': 400,
-            'body': 'OK'
-        }
+
+    return {
+        'statusCode': 400,
+        'body': 'OK'
+    }

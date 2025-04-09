@@ -32,3 +32,33 @@ resource "aws_scheduler_schedule" "BoxingMondayScheduler" {
     }
   }
 }
+
+resource "aws_scheduler_schedule" "RunWednesdayScheduler" {
+  count       = 1
+  name        = "${local.project_tag}-Scheduler-Run-Class-Wednesday"
+  description = "Scheduler to book my Running Class on Wednesday"
+  group_name  = aws_scheduler_schedule_group.event_bridge_group.name
+
+  flexible_time_window {
+    mode = "OFF"
+  }
+  schedule_expression          = "cron(00 09 ? * TUE *)"
+  schedule_expression_timezone = "Europe/Lisbon"
+
+  target {
+    arn      = module.lambda_function.lambda_function_arn
+    role_arn = aws_iam_role.role.arn
+    input = jsonencode({
+      "users" : [
+        "User1", "User2"
+      ],
+      "className" : "Run",
+      "classTime" : "07:45"
+    })
+
+    retry_policy {
+      maximum_event_age_in_seconds = 60
+      maximum_retry_attempts       = 0
+    }
+  }
+}
